@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <title>CCC Test Module</title>
+    <style>
+        .roomBtn { width: 120px; background: rgb(130, 224, 255); border: none; padding: 10px; margin: 5px; }
+        #roomIdInput { border: 1; padding: 10px; width: 200px; margin: 5px; }
+        #videoBox{display:inline-grid;grid-template-columns:repeat(auto-fill,minmax(100%,auto))}
+        #videoBox video { width: 100%; }
+        .multi-video { border: 1px solid black; }
+        #printBox {font-size: 14px; color: black;}
+        ul { list-style-type: none; overflow: hidden; }
+        li { float: left; padding: 5px 5px; }
+    </style>
+</head>
+<body>
+    <input type="text" name="roomIdInput" id="roomIdInput" placeholder="room id"/>
+    <button class="roomBtn" id="CreateRoomBtn">CreateRoom</button>
+    <button class="roomBtn" id="RoomJoinBtn">RoomJoin</button>
+    <button class="roomBtn" id="SDPBtn" disabled>SDP</button>
+
+    <div id="videoBox"></div><br/>
+    <div id="printBox"></div>
+    <script type="text/javascript" src="https://dev.knowledgetalk.co.kr:7103/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="./index.js"></script>
+</body>
+</html>
