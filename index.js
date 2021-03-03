@@ -33,6 +33,7 @@ const socketLog = (type, contents) => {
 }
 
 //send message to signaling server
+//sunny) 서버로 보내기 위한 senddata
 const sendData = data => {
     data.cpCode = CPCODE
     data.authKey = AUTHKEY
@@ -61,6 +62,7 @@ const deletePeers = async () => {
 }
 
 //영상 출력 화면 Box 생성
+//sunny) 참가자 인원만큼 videoview박스 생성
 const createVideoBox = id => {
     console.log("createVideoBox: "+id);
     let videoContainner = document.createElement("div");
@@ -72,7 +74,7 @@ const createVideoBox = id => {
     videoLabel.appendChild(videoLabelText);
 
     videoContainner.appendChild(videoLabel);
-
+    //sunny) 해당 박스 엘리멘트 아이디는 multiVideo-userId로 한다.
     let multiVideo = document.createElement("video");
     multiVideo.autoplay = true;
     multiVideo.id = "multiVideo-" + id;
@@ -218,6 +220,7 @@ clientIo.on("knowledgetalk", async data => {
         case 'RoomJoin':
             if(data.code == '200'){
                 roomJoin(data);
+                //sunny) SDP button disable이 방장 포함 참여자가 2명이어도 able하게 킨다.
                 RoomJoinBtn.disabled = true;
                 CreateRoomBtn.disabled = true;
                 SDPBtn.disabled = false;
@@ -241,6 +244,7 @@ clientIo.on("knowledgetalk", async data => {
                     peers[userId].setRemoteDescription(new RTCSessionDescription(data.sdp));
                 }
             }else if(data.useMediaSvr == 'N'){
+                //sunny) 참여자 3명 미만일 때도 offer와 answer가 되게 설정
                 console.log("offer N")
                 if(data.sdp && data.sdp.type == 'offer'){
                     createSDPAnswer(data);
@@ -281,6 +285,7 @@ const roomJoin = data => {
     members = Object.keys(data.members);
     console.log("룸조인데이터: "+ members)
     console.log("룸조인데이터2: "+ members.length)
+    //sunny) room join할 때 멤버가 2명이상이면 createvideobox 활성화
     if(members.length>1){
         for(let i=0; i<members.length; ++i){
             let user = document.getElementById(members[i]);
@@ -295,7 +300,7 @@ const startSession = async data => {
     members = Object.keys(data.members);
     console.log("멤버스: "+members)
     console.log("멤버스데이터: "+ data)
-    //3명 이상일 때, 다자간 통화 연결 시작
+    //sunny) 3명 이상일 때, 다자간 통화 연결 시작
     if(data.useMediaSvr == 'Y'){
         console.log("멤버스 YES: "+members)
         for(let i=0; i<members.length; ++i){
@@ -307,6 +312,7 @@ const startSession = async data => {
 
         SDPBtn.disabled = false;
         host = data.host;
+    //sunny) 의미는 크게 없음
     }else if(data.useMediaSvr == 'N'){
         console.log("멤버스 NO: "+members)
         for(let i=0; i<members.length; ++i){
@@ -319,18 +325,7 @@ const startSession = async data => {
         SDPBtn.disabled = false;
         CallBtn.disabled = false;
         host = data.host;
-    }/*else{
-        console.log("멤버스 ELSE: "+members)
-        for(let i=0; i<members.length; ++i){
-            let user = document.getElementById(members[i]);
-            if(!user){
-                createVideoBox(members[i]);
-            }
-        }
-
-        SDPBtn.disabled = false;
-        host = data.host;
-    }*/
+    }
 }
 
 const receiveFeed = (data) => {
