@@ -108,8 +108,8 @@ const createSDPOffer = async id => {
 //send sdp answer
 /*TODO: */
 const createSDPAnswer = async data => {
-    console.log("createSDPAnswer: "+data);
-    let displayId = data.displayId;
+    console.log("createSDPAnswer: "+data.userId);
+    let displayId = data.userId;
 
     peers[displayId] = new RTCPeerConnection();
     peers[displayId].ontrack = e => {
@@ -233,20 +233,22 @@ clientIo.on("knowledgetalk", async data => {
         case 'SDP':
             console.log("case sdp");
             if(data.useMediaSvr == 'Y'){
+                console.log("offer Y")
                 if(data.sdp && data.sdp.type == 'offer'){
                     createSDPAnswer(data);
                 }
                 else if(data.sdp && data.sdp.type == 'answer'){
                     peers[userId].setRemoteDescription(new RTCSessionDescription(data.sdp));
                 }
-            }/*else if(data.useMediaSvr == 'N'){
+            }else if(data.useMediaSvr == 'N'){
+                console.log("offer N")
                 if(data.sdp && data.sdp.type == 'offer'){
                     createSDPAnswer(data);
                 }
                 else if(data.sdp && data.sdp.type == 'answer'){
                     peers[userId].setRemoteDescription(new RTCSessionDescription(data.sdp));
                 }
-            }*/
+            }
             break;
         case 'ReceiveFeed':
             receiveFeed(data)
