@@ -1,5 +1,5 @@
 //socket 연결
-const clientIo = io.connect("https://dev.knowledgetalk.co.kr:7103/SignalServer",{});
+const clientIo = io.connect("https://dev.knowledgetalk.co.kr:7100/SignalServer",{});
 
 const roomIdInput = document.getElementById("roomIdInput");
 const videoBox = document.getElementById("videoBox");
@@ -8,6 +8,7 @@ const printBox = document.getElementById("printBox")
 const CreateRoomBtn = document.getElementById("CreateRoomBtn");
 const RoomJoinBtn = document.getElementById("RoomJoinBtn");
 const SDPBtn = document.getElementById("SDPBtn");
+const CallBtn = document.getElementById("CallBtn");
 
 const CPCODE = "KP-CCC-demouser-01"
 const AUTHKEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdHNlcnZpY2UiLCJtYXhVc2VyIjoiMTAwIiwic3RhcnREYXRlIjoiMjAyMC0wOC0yMCIsImVuZERhdGUiOiIyMDIwLTEyLTMwIiwiYXV0aENvZGUiOiJLUC1DQ0MtdGVzdHNlcnZpY2UtMDEiLCJjb21wYW55Q29kZSI6IkxJQy0wMyIsImlhdCI6MTU5Nzk3NjQ3Mn0.xh_JgK67rNPufN2WoBa_37LzenuX_P7IEvvx5IbFZI4"
@@ -15,6 +16,7 @@ const AUTHKEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdHNlcnZpY2
 let members;
 let roomId;
 let userId;
+let host;
 
 let peers = {};
 let streams = {};
@@ -60,6 +62,7 @@ const deletePeers = async () => {
 
 //영상 출력 화면 Box 생성
 const createVideoBox = id => {
+    console.log("createVideoBox: "+id);
     let videoContainner = document.createElement("div");
     videoContainner.classList = "multi-video";
     videoContainner.id = id;
@@ -77,9 +80,12 @@ const createVideoBox = id => {
 
     videoBox.appendChild(videoContainner);
 }
-
+/*
+TODO:
+ */
 //Local stream, peer 생성 및 sdp return
 const createSDPOffer = async id => {
+    console.log("createSDPOffer: "+id);
     return new Promise(async (resolve, reject) => {
         peers[id] = new RTCPeerConnection();
         streams[id] = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
@@ -100,7 +106,9 @@ const createSDPOffer = async id => {
 }
 
 //send sdp answer
+/*TODO: */
 const createSDPAnswer = async data => {
+    console.log("createSDPAnswer: "+data);
     let displayId = data.displayId;
 
     peers[displayId] = new RTCPeerConnection();
@@ -159,7 +167,6 @@ CreateRoomBtn.addEventListener('click', () => {
 
     sendData(data);
 });
-
 RoomJoinBtn.addEventListener('click', () => {
     let data = {
         "eventOp":"RoomJoin",
@@ -168,7 +175,6 @@ RoomJoinBtn.addEventListener('click', () => {
 
     sendData(data);
 });
-
 SDPBtn.addEventListener('click', async () => {
 
     let sdp = await createSDPOffer(userId);
@@ -179,12 +185,21 @@ SDPBtn.addEventListener('click', async () => {
         "roomId": roomIdInput.value,
         "sdp": sdp,
         "usage": "cam",
-        "userId": userId
+        "userId": userId,
+        "host": host
     }
 
     sendData(data);
 })
-
+CallBtn.addEventListener('click', () =>{
+    console.log("콜버튼: "+members[1])
+    let data = {
+        "eventOp":"StartCall",
+        "roomId":roomIdInput.value,
+        "userId": members[1],
+    }
+    sendData(data);
+})
 
 
 /********************** event receive **********************/
@@ -205,14 +220,18 @@ clientIo.on("knowledgetalk", async data => {
                 roomJoin(data);
                 RoomJoinBtn.disabled = true;
                 CreateRoomBtn.disabled = true;
+                SDPBtn.disabled = false;
+                
             }
             break;
 
         case 'StartSession':
+            console.log("startsession 시행됨");
             startSession(data);
             break;
 
         case 'SDP':
+            console.log("case sdp");
             if(data.useMediaSvr == 'Y'){
                 if(data.sdp && data.sdp.type == 'offer'){
                     createSDPAnswer(data);
@@ -220,7 +239,14 @@ clientIo.on("knowledgetalk", async data => {
                 else if(data.sdp && data.sdp.type == 'answer'){
                     peers[userId].setRemoteDescription(new RTCSessionDescription(data.sdp));
                 }
-            }
+            }/*else if(data.useMediaSvr == 'N'){
+                if(data.sdp && data.sdp.type == 'offer'){
+                    createSDPAnswer(data);
+                }
+                else if(data.sdp && data.sdp.type == 'answer'){
+                    peers[userId].setRemoteDescription(new RTCSessionDescription(data.sdp));
+                }
+            }*/
             break;
         case 'ReceiveFeed':
             receiveFeed(data)
@@ -250,13 +276,26 @@ const createRoom = data => {
 
 const roomJoin = data => {
     userId = data.userId;
+    members = Object.keys(data.members);
+    console.log("룸조인데이터: "+ members)
+    console.log("룸조인데이터2: "+ members.length)
+    if(members.length>1){
+        for(let i=0; i<members.length; ++i){
+            let user = document.getElementById(members[i]);
+            if(!user){
+                createVideoBox(members[i]);
+            }
+        }
+    }
 }
 
 const startSession = async data => {
     members = Object.keys(data.members);
-
+    console.log("멤버스: "+members)
+    console.log("멤버스데이터: "+ data)
     //3명 이상일 때, 다자간 통화 연결 시작
     if(data.useMediaSvr == 'Y'){
+        console.log("멤버스 YES: "+members)
         for(let i=0; i<members.length; ++i){
             let user = document.getElementById(members[i]);
             if(!user){
@@ -265,7 +304,31 @@ const startSession = async data => {
         }
 
         SDPBtn.disabled = false;
-    }
+        host = data.host;
+    }else if(data.useMediaSvr == 'N'){
+        console.log("멤버스 NO: "+members)
+        for(let i=0; i<members.length; ++i){
+            let user = document.getElementById(members[i]);
+            if(!user){
+                createVideoBox(members[i]);
+            }
+        }
+
+        SDPBtn.disabled = false;
+        CallBtn.disabled = false;
+        host = data.host;
+    }/*else{
+        console.log("멤버스 ELSE: "+members)
+        for(let i=0; i<members.length; ++i){
+            let user = document.getElementById(members[i]);
+            if(!user){
+                createVideoBox(members[i]);
+            }
+        }
+
+        SDPBtn.disabled = false;
+        host = data.host;
+    }*/
 }
 
 const receiveFeed = (data) => {
