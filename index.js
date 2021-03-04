@@ -8,7 +8,6 @@ const printBox = document.getElementById("printBox")
 const CreateRoomBtn = document.getElementById("CreateRoomBtn");
 const RoomJoinBtn = document.getElementById("RoomJoinBtn");
 const SDPBtn = document.getElementById("SDPBtn");
-const CallBtn = document.getElementById("CallBtn");
 
 const CPCODE = "KP-CCC-demouser-01"
 const AUTHKEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdHNlcnZpY2UiLCJtYXhVc2VyIjoiMTAwIiwic3RhcnREYXRlIjoiMjAyMC0wOC0yMCIsImVuZERhdGUiOiIyMDIwLTEyLTMwIiwiYXV0aENvZGUiOiJLUC1DQ0MtdGVzdHNlcnZpY2UtMDEiLCJjb21wYW55Q29kZSI6IkxJQy0wMyIsImlhdCI6MTU5Nzk3NjQ3Mn0.xh_JgK67rNPufN2WoBa_37LzenuX_P7IEvvx5IbFZI4"
@@ -193,15 +192,7 @@ SDPBtn.addEventListener('click', async () => {
 
     sendData(data);
 })
-CallBtn.addEventListener('click', () =>{
-    console.log("콜버튼: "+members[1])
-    let data = {
-        "eventOp":"StartCall",
-        "roomId":roomIdInput.value,
-        "userId": members[1],
-    }
-    sendData(data);
-})
+
 
 
 /********************** event receive **********************/
@@ -323,7 +314,6 @@ const startSession = async data => {
         }
 
         SDPBtn.disabled = false;
-        CallBtn.disabled = false;
         host = data.host;
     }
 }
