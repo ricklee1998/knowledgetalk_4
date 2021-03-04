@@ -109,9 +109,17 @@ const createSDPOffer = async id => {
 //send sdp answer
 /*TODO: */
 const createSDPAnswer = async data => {
-    console.log("createSDPAnswer: "+data.userId);
-    let displayId = data.userId;
-
+    console.log("createSDPAnswer: "+data.displayId);
+    let displayId;
+    //sunny) 1대1 통화
+    if(members.length<=2){
+        console.log("멤버3미만:"+members.length);
+        displayId = data.userId;
+    //sunny) N대N 통화
+    }else if(members.length>2){
+        console.log("멤버3이상:"+members.length);
+        displayId = data.displayId;
+    }
     peers[displayId] = new RTCPeerConnection();
     peers[displayId].ontrack = e => {
         streams[displayId] = e.streams[0];
